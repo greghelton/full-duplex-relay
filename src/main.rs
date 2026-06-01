@@ -148,7 +148,7 @@ async fn send_msg(
 /// Returns a plain-text list of currently connected listener names.
 async fn who(State(listeners): State<Listeners>) -> impl IntoResponse {
     let names: Vec<String> = listeners.iter().map(|e| e.key().clone()).collect();
-    format!("Online: {:?}", names)
+    format!("Online: [{}]", names.join(", "))
 }
 
 /// GET /disconnect?id=<name>
