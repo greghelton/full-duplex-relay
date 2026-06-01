@@ -260,15 +260,22 @@ function sendMsg() {
         });
 }
 
+let refreshInFlight = false;
 function refreshWho() {
+    if (refreshInFlight) return;
+    refreshInFlight = true;
     fetch('/who')
         .then(r => r.text())
         .then(text => {
             const names = text.replace('Online: [','').replace(']','')
                               .split(',').map(s => s.trim()).filter(Boolean);
-            const me = myId.value.trim();
+            const me     = myId.value.trim().toLowerCase();
+            const others = names.filter(n => n.toLowerCase() !== me && n !== '');
+
+            // preserve current selection
+            const current = toId.value;
             toId.innerHTML = '';
-            const others = names.filter(n => n !== me && n !== '');
+
             if (others.length === 0) {
                 toId.innerHTML = '<option value="">— nobody else online —</option>';
             } else {
@@ -277,8 +284,11 @@ function refreshWho() {
                     opt.value = n; opt.textContent = n;
                     toId.appendChild(opt);
                 });
+                // restore selection if that person is still online
+                if (others.includes(current)) toId.value = current;
             }
-        });
+        })
+        .finally(() => { refreshInFlight = false; });
 }
 
 setInterval(refreshWho, 3000);
